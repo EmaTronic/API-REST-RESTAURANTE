@@ -1,0 +1,173 @@
+<nav th:fragment="navbar" class="navbar navbar-expand-lg bg-body-tertiary" style=" display: flex; flex-direction: column;">
+  <div id="div-img-restaurante" >
+    <a class="navbar-brand" href="/"><img src="/images/logo.png"></a>
+  </div>
+  <div class="container-fluid">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link active" aria-current="page" href="/">Home</a>
+        </li>
+        <li class="nav-item dropdown" th:if="${#authorization.expression('hasAnyRole(''ADMIN'', ''EMPLEADO'')')}">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownCiudades" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Pedidos
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownLocalidades">
+            <li><a class="dropdown-item" href="/pedidos">Ver Pedidos</a></li>
+            <li><a class="dropdown-item" href="/pedidos/nuevoPedido">Crear Pedido</a></li>
+            <li><a class="dropdown-item" href="/detallePedidos">Todos los detalles</a></li>
+          </ul>
+        </li>
+        <li class="nav-item dropdown" th:if="${#authorization.expression('hasAnyRole(''ADMIN'', ''EMPLEADO'')')}">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Productos
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+
+            <li><a class="dropdown-item" href="/productos">Ver Productos</a></li>
+            <li><a class="dropdown-item" href="/nuevoProducto">Crear Producto</a></li>
+          </ul>
+        </li>
+
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Menu
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+            <li><a class="dropdown-item" href="/menu">Ver Menu</a></li>
+          </ul>
+        </li>
+
+
+
+        <li class="nav-item dropdown" th:if="${#authorization.expression('hasAnyRole(''ADMIN'', ''EMPLEADO'')')}">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Categorias
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+
+            <li><a class="dropdown-item" href="/categorias">Ver Categorias</a></li>
+            <li><a class="dropdown-item" href="/categorias/nuevaCategoria">Crear Categoria</a></li>
+          </ul>
+        </li>
+
+        <li class="nav-item dropdown" th:if="${#authorization.expression('hasAnyRole(''ADMIN'', ''EMPLEADO'')')}">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Mesas
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+
+            <li><a class="dropdown-item" href="/mesas">Ver Mesas</a></li>
+            <li><a class="dropdown-item" href="/mesas/nuevaMesa">Agregar Mesa</a></li>
+          </ul>
+        </li>
+        <!--
+        <li class="nav-item dropdown" th:if="${#authorization.expression('hasRole(''ADMIN'')')}">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownRoles" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Roles
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownRoles">
+            <li><a class="dropdown-item" href="/roles">Ver Roles</a></li>
+            <li><a class="dropdown-item" href="/roles/nuevoRol">Crear Rol</a></li>
+          </ul>
+        </li>
+        -->
+
+        <li class="nav-item dropdown" th:if="${#authorization.expression('hasRole(''ADMIN'')')}">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownUsuarios" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Usuarios
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownRoles">
+            <li><a class="dropdown-item" href="/usuarios">Ver Usuarios</a></li>
+            <li><a class="dropdown-item" href="/usuarios/nuevoUsuario">Crear Usuario</a></li>
+          </ul>
+        </li>
+
+        <!--
+          <li class="nav-item dropdown" th:if="${#authorization.expression('hasRole(''ADMIN'')')}">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownPaises" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Países
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="navbarDropdownPaises">
+              <li><a class="dropdown-item" href="/paises">Ver Países</a></li>
+              <li><a class="dropdown-item" href="/paises/nuevoPais">Crear País</a></li>
+            </ul>
+          </li>
+
+
+          <li class="nav-item dropdown" th:if="${#authorization.expression('hasRole(''ADMIN'')')}">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownProvincias" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Provincias
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="navbarDropdownProvincias">
+              <li><a class="dropdown-item" href="/provincias">Ver Provincias</a></li>
+              <li><a class="dropdown-item" href="/provincias/nuevaProvincia">Crear Provincia</a></li>
+            </ul>
+          </li>
+
+          <li class="nav-item dropdown" th:if="${#authorization.expression('hasRole(''ADMIN'')')}">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownCiudades" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Ciudades
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="navbarDropdownLocalidades">
+              <li><a class="dropdown-item" href="/ciudades">Ver Ciudades</a></li>
+              <li><a class="dropdown-item" href="/ciudades/nuevaCiudad">Crear Ciudad</a></li>
+            </ul>
+          </li>
+          -->
+          <li class="nav-item dropdown" th:if="${#authorization.expression('hasRole(''CLIENTE'')')}">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownPerfil" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Pedir
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="navbarDropdownPerfil">
+              <li><a class="dropdown-item" href="/pedidos/nuevoPedido">Nuevo Pedido</a></li>
+              <li><a class="dropdown-item" href="/perfil/pedidos">Mis pedidos</a></li>
+            </ul>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownPerfil" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Reservar
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="navbarDropdownPerfil">
+              <li th:if="${#authorization.expression('hasAnyRole(''ADMIN'', ''EMPLEADO'')')}"><a class="dropdown-item" href="/reservas">Ver reservas</a></li>
+              <li><a class="dropdown-item" href="/reservas/nuevaReserva">Nueva reserva</a></li>
+              <li><a class="dropdown-item" href="/reservas/buscarReserva">Buscar mi reserva</a></li>
+            </ul>
+          </li>
+          <li class="nav-item dropdown" th:if="${#authorization.expression('hasAnyRole(''ADMIN'', ''EMPLEADO'',''CLIENTE'')')}">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownPerfil" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Mi Perfil
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="navbarDropdownPerfil">
+              <li><a class="dropdown-item" href="/perfil">Ver Perfil</a></li>
+              <li><a class="dropdown-item" href="/perfil/editar">Editar Perfil</a></li>
+              <li><a class="dropdown-item" href="/logout">Logout</a></li>
+            </ul>
+          </li>
+          <li class="nav-item dropdown" th:if="${#authorization.expression('isAnonymous()')}">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownPerfil" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Log In
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="navbarDropdownPerfil">
+              <li><a class="dropdown-item" href="/usuarios/nuevoCliente">Registrarse</a></li>
+              <li><a class="dropdown-item" href="/login">Ingresar</a></li>
+            </ul>
+          </li>
+
+        </ul>
+
+      </div>
+  </div>
+
+  <style>
+  a.navbar-brand img {
+    width:50px ;
+    margin:15px;
+  }
+
+</style>
+  </nav>
+

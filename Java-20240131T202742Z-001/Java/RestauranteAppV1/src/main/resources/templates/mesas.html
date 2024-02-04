@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Mesas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integrity="sha512-pzCv/ySBL+S8+A3Rc0bGjLeF68OL3Cw4Jpq7pj9WJbU9CgyzOVQdIn44F8ymkUeBh/LRtusJ6naL2Ji3U+v2Ww==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+
+
+</head>
+<body>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/ui/1.13.0/jquery-ui.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.2/moment.min.js"></script>
+
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+
+
+
+<div th:replace="navbar1 :: navbar"></div>
+
+<section style="background-color: #eee;">
+    <div class="container py-5">
+        <div class="row">
+            <div class="col">
+                <nav aria-label="breadcrumb" class="bg-light rounded-3 p-3 mb-4">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="/">Home</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Mesas</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+        <div class="px-4 my-4 text-center" bis_skin_checked="1">
+            <img class="d-block mx-auto mb-4" src="/images/mesas-icon.png" alt="" width="120" height="120">
+            <div class="d-flex justify-content-center align-items-center mx-auto gap-3">
+                <h1 class="display-5 fw-bold">Mesas</h1>
+                <a href="/mesas/nuevaMesa" class="btn btn-secondary" style="font-size: 1.25em;">+</a>
+            </div>
+            <div class="col-lg-6 mx-auto" bis_skin_checked="1">
+                <p class="lead mb-4">Todas las mesas.</p>
+            </div>
+        </div>
+        <div class="container text-center">
+            <!-- Agregar sección para mostrar mensaje de error -->
+            <div th:if="${error}" class="alert alert-danger" role="alert">
+                <p th:text="${error}"></p>
+            </div>
+            <div class="col-md-6">
+                <div class="input-group mb-3">
+                    <span class="input-group-text" id="estado-label">Filtrar por Estado:</span>
+                    <select id="estadoFilterMesas" class="form-select">
+                        <option value="">Todos los estados</option>
+                        <option value="DISPONIBLE">DISPONIBLE</option>
+                        <option value="OCUPADA">OCUPADA</option>
+                        <option value="RESERVADA">RESERVADA</option>
+                    </select>
+                    <button class="btn btn-outline-secondary" type="button" id="clear-estado-mesas">Borrar Filtro</button>
+                </div>
+            </div>
+            <table class="table table-striped table-hover" id="tablaMesas1">
+                <thead>
+                <tr>
+                    <th>Número</th>
+                    <th>Capacidad</th>
+                    <th>Estado</th>
+                    <th th:if="${#authorization.expression('hasAnyRole(''ADMIN'', ''EMPLEADO'')')}">Acciones</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="mesa : ${listaMesas}" th:class="${mesa.estado == 'DISPONIBLE' ? 'disponible' : mesa.estado == 'OCUPADA' ? 'ocupada' : 'reservada'}">
+                    <td th:text="${mesa.numero}"></td>
+                    <td th:text="${mesa.capacidad}"></td>
+                    <td th:text="${mesa.estado}" class="td-estado"></td>
+                    <td th:if="${#authorization.expression('hasAnyRole(''ADMIN'', ''EMPLEADO'')')}">
+                        <a th:href="@{/mesas/editar/{id}(id=${mesa.mesaId})}" class="btn btn-primary">Editar</a>
+                        <a th:href="@{/mesas/eliminar/{id}(id=${mesa.mesaId})}" class="btn btn-danger" onclick="return confirm('¿Estás seguro de que quieres eliminar esta mesa?')" th:if="${#authorization.expression('hasRole(''ADMIN'')')}">Eliminar</a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+
+<br>
+<br>
+<div class="container text-center">
+    <div class="formulario ">
+        <form id="mesaForm" class="row g-3 align-items-center justify-content-center">
+            <div class="col-auto" >
+                <div class="input-group">
+                    <h3 class="card-title">Editar Mesa:</h3>
+                </div>
+            </div>
+            <div class="col-auto">
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">Número de Mesa:</span>
+                    </div>
+                    <input type="text" class="form-control" id="numeroMesa" placeholder="N° mesa..." required>
+                </div>
+            </div>
+            <div class="col-auto">
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">Tamaño:</span>
+                    </div>
+                    <select class="form-select rounded" id="tamanio" required>
+                        <option value="" disabled selected>Seleccione un tamaño</option>
+                        <option value="chico1">Chico 1</option>
+                        <option value="chico2">Chico 2</option>
+                        <option value="mediano1">Mediano 1</option>
+                        <option value="mediano2">Mediano 2</option>
+                        <option value="grande1">Grande 1</option>
+                        <option value="grande2">Grande 2</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="col-auto">
+                <div class="input-group">
+                    <button type="submit" class="btn btn-success">Aplicar Cambios</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<br>
+
+<div class="mesas-container">
+    <div class="col-md-3">
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <span class="input-group-text">Tamaño Restaurante:</span>
+            </div>
+            <button type="button" class="btn btn-secondary" id="zoomIn">+</button>
+            <button type="button" class="btn btn-secondary" id="zoomOut">-</button>
+        </div>
+    </div>
+    <div th:each="mesa : ${listaMesas}" th:class="${'mesa ' + mesa.estado}" draggable="true"
+         th:data-numero="${mesa.numero}" th:text="${mesa.numero}"></div>
+</div>
+<br>
+
+
+
+</body>
+<div th:replace="footer1 :: footer"></div>
+<style>
+.mesas-container {
+    position: relative;
+    width: 1000px; /* Ancho del contenedor */
+    height: 800px; /* Alto del contenedor */
+    border: 2px solid #ccc; /* Borde del contenedor */
+    margin: auto; /* Centra el contenedor */
+    padding: 10px;
+    background-color: #d6d6d6;
+    background-image: url('../images/bec-armory-floor-plan-empty.jpg') !important;
+    overflow: auto; /* Agregamos la propiedad overflow para permitir el scroll */
+    white-space: nowrap; /* Evita el salto de línea dentro del contenedor */
+}
+
+.mesa {
+    width: 200px;
+    height: 100px;
+    background-color: #ccc;
+    border: 2px solid #fff;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 20px;
+    cursor: move;
+    position: absolute;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+
+
+
+.mesa.DISPONIBLE {
+    background-color: #16ce4a;
+}
+.mesa.OCUPADA {
+    background-color:  #cc2222;
+    color:white;
+}
+.mesa.RESERVADA {
+    background-color: #ead327;
+}
+
+.mesa.ui-draggable-dragging {
+    z-index: 9999; /* Asegura que la mesa en movimiento esté sobre las demás */
+}
+
+
+
+
+#tablaMesas1 .disponible .td-estado {
+  background-color: #16ce4a;
+}
+
+#tablaMesas1 .ocupada .td-estado{
+  background-color: #cc2222;
+  color:white;
+}
+
+#tablaMesas1 .reservada .td-estado{
+  background-color: #ead327;
+}
+
+div#tablaMesas1_length {
+    text-align: left;
+}
+</style>
+
+
+<script th:inline="javascript">
+   document.getElementById('mesaForm').addEventListener('submit', function(event) {
+   event.preventDefault();
+
+   var numeroMesa = document.getElementById('numeroMesa').value;
+   var tamanioSeleccionado = document.getElementById('tamanio').value;
+
+
+  // Obtenemos la mesa usando el atributo data-numero
+  var mesa = document.querySelector('.mesa[data-numero="' + numeroMesa + '"]');
+
+     if (mesa) {
+        // Asignar tamaños predefinidos según la opción seleccionada
+        var tamanios = {
+            chico1: { width: '100px', height: '50px' },
+            chico2: { width: '50px', height: '100px' },
+            mediano1: { width: '150px', height: '75px' },
+            mediano2: { width: '75px', height: '150px' },
+            grande1: { width: '200px', height: '100px' },
+            grande2: { width: '100px', height: '200px' }
+        };
+
+        mesa.style.width = tamanios[tamanioSeleccionado].width;
+        mesa.style.height = tamanios[tamanioSeleccionado].height;
+
+        // Guardar cambios en el localStorage
+        localStorage.setItem('tamanio_' + numeroMesa, JSON.stringify({
+            width: tamanios[tamanioSeleccionado].width,
+            height: tamanios[tamanioSeleccionado].height
+        }));
+    }
+});
+
+// Restaurar cambios desde el localStorage al cargar la página
+document.addEventListener("DOMContentLoaded", function() {
+  var mesas = document.querySelectorAll('.mesa');
+
+  mesas.forEach(function(mesa) {
+    // Obtenemos el número de mesa usando el método getAttribute
+    var numeroMesa = mesa.getAttribute('data-numero');
+    var cambiosGuardados = localStorage.getItem('tamanio_' + numeroMesa);
+
+    if (cambiosGuardados) {
+      var cambios = JSON.parse(cambiosGuardados);
+      mesa.style.width = cambios.width;
+      mesa.style.height = cambios.height;
+
+    }
+  });
+
+
+});
+
+
+
+
+
+
+
+// Restaurar la posición desde el localStorage al cargar la página
+$(document).ready(function() {
+  $('.mesa').draggable({
+    containment: '.mesas-container',
+    cursor: 'move',
+    snap: true,
+    snapMode: 'inner',
+    stop: function(event, ui) {
+      // Obtenemos el número de mesa usando el atributo data-numero
+      var numeroMesa = $(this).attr('data-numero');
+      localStorage.setItem('posicion_' + numeroMesa, JSON.stringify(ui.position));
+    }
+  });
+
+  // Al cargar la página, restauramos la posición de las mesas desde el localStorage
+  $('.mesa').each(function() {
+    // Obtenemos el número de mesa usando el atributo data-numero
+    var numeroMesa = $(this).attr('data-numero');
+    var posicionGuardada = localStorage.getItem('posicion_' + numeroMesa);
+    if (posicionGuardada) {
+      var posicion = JSON.parse(posicionGuardada);
+      $(this).css({
+        top: posicion.top + 'px',
+        left: posicion.left + 'px'
+      });
+    }
+  });
+});
+
+
+        // Script para cambiar el tamaño del contenedor
+
+        document.getElementById('zoomIn').addEventListener('click', function () {
+            var mesasContainer = document.querySelector('.mesas-container');
+            var currentWidth = mesasContainer.offsetWidth;
+            mesasContainer.style.width = (currentWidth + 100) + 'px';
+
+            // Guardar cambios en el localStorage
+        localStorage.setItem('contenedor_width', mesasContainer.style.width);
+
+        });
+
+        document.getElementById('zoomOut').addEventListener('click', function () {
+            var mesasContainer = document.querySelector('.mesas-container');
+            var currentWidth = mesasContainer.offsetWidth;
+            mesasContainer.style.width = (currentWidth - 100) + 'px';
+
+             // Guardar cambios en el localStorage
+        localStorage.setItem('contenedor_width', mesasContainer.style.width);
+
+        });
+
+        // Restaurar cambios desde el localStorage al cargar la página
+        document.addEventListener("DOMContentLoaded", function () {
+        var mesasContainer = document.querySelector('.mesas-container');
+        var widthGuardado = localStorage.getItem('contenedor_width');
+
+        if (widthGuardado) {
+            mesasContainer.style.width = widthGuardado;
+        }
+         });
+
+
+</script>
+
+<script>
+    $(document).ready(function() {
+    var table = $('#tablaMesas1').DataTable({
+
+
+    language:{
+            "decimal":        "",
+            "emptyTable":     "No hay datos disponibles en la tabla",
+            "info":           "Mostrando _START_ a _END_ de _TOTAL_ entradas",
+            "infoEmpty":      "Mostrando 0 a 0 de 0 entradas",
+            "infoFiltered":   "(filtrado de _MAX_ entradas totales)",
+            "infoPostFix":    "",
+            "thousands":      ",",
+            "lengthMenu":     "Mostrar _MENU_ entradas",
+            "loadingRecords": "Cargando...",
+            "processing":     "Procesando...",
+            "search":         "Buscar:",
+            "zeroRecords":    "No se encontraron registros coincidentes",
+            "paginate": {
+                "first":      "Primera",
+                "last":       "Última",
+                "next":       "Siguiente",
+                "previous":   "Anterior"
+            },
+            "aria": {
+                "sortAscending":  ": activar para ordenar la columna ascendente",
+                "sortDescending": ": activar para ordenar la columna descendente"
+            }
+        },
+        "lengthMenu": [ [5, 10, 25, 50, -1], [5, 10, 25, 50, "Todas"] ],
+        pageLength: 10,
+         columnDefs: [
+            {
+                targets: '_all',
+                className: 'text-center'
+            },
+            {
+                targets: [-1], // Última columna
+                orderable: false
+            }
+        ]
+});
+
+        // Agregar lógica para filtrar por estado en mesas
+        $('#estadoFilterMesas').on('change', function() {
+            var estadoSeleccionado = $(this).val();
+
+
+            // Verificar si se seleccionó "Todas las mesas"
+            if (estadoSeleccionado === '') {
+                // Eliminar el filtro de estado
+                table.column(2).search('').draw();
+            } else {
+                // Aplicar el filtro de estado
+                table.column(2)
+                    .search('^' + estadoSeleccionado + '$', true, false)
+                    .draw();
+            }
+        });
+
+
+
+
+        // Borrar filtro de estado en mesas
+        $('#clear-estado-mesas').click(function() {
+            $('#estadoFilterMesas').val('');
+            table.column(2).search('').draw();
+        });
+});
+</script>
+
+</html>

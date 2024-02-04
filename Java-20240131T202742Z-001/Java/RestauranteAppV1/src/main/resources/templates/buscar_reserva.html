@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Buscar Reserva</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+</head>
+<body>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+
+<script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.7.0.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+
+
+</script>
+<div th:replace="navbar1 :: navbar"></div>
+<!--
+<section style="background-color: #eee;">
+    <div class="container py-5">
+        <div class="row">
+            <div class="col">
+                <nav aria-label="breadcrumb" class="bg-light rounded-3 p-3 mb-4">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="/">Home</a></li>
+                        <li class="breadcrumb-item" th:if="${#authorization.expression('hasAnyRole(''ADMIN'', ''EMPLEADO'')')}"><a href="/reservas">Reserva</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Buscar Reserva</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <h2>Buscar Reserva</h2>
+
+        <div class="input-group mb-3">
+            <label class="input-group-text" for="tipoBusqueda">Seleccionar tipo de búsqueda:</label>
+            <select id="tipoBusqueda" class="form-select">
+                <option value="dni">Por DNI</option>
+                <option value="codigo">Por Código</option>
+            </select>
+            <input type="text" id="valorBusqueda" class="form-control" placeholder="Ingresar valor de búsqueda">
+            <button id="btnBuscar" class="btn btn-primary" type="button">Buscar</button>
+        </div>
+
+
+        <p id="mensajeNoDatos" style="display: none;"></p>
+        <br>
+
+        <div id="tarjetasResultados" class="row row-cols-1 row-cols-md-3 g-4" style="display: none;">
+
+        </div>
+    </div>
+</section>
+-->
+<section style="background-color: #eee;">
+    <div class="container py-5">
+        <div class="row">
+            <div class="col">
+                <nav aria-label="breadcrumb" class="bg-light rounded-3 p-3 mb-4">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="/">Home</a></li>
+                        <li class="breadcrumb-item" th:if="${#authorization.expression('hasAnyRole(''ADMIN'', ''EMPLEADO'')')}"><a href="/reservas">Reservas</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Buscar Reserva</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+    <div class="container col-xl-10 col-xxl-8 px-4 " >
+        <div class="row align-items-center g-lg-5 py-5">
+            <div class="col-lg-7 text-center text-lg-start">
+                <img class="mb-3" src="/images/search-icon.png" alt="" width="50" height="50">
+                <h1 class="display-4 fw-bold lh-1 mb-3">Busca tu Reserva</h1>
+                <p class="col-lg-10 fs-4">Encuentra tu reservación con tu DNI o Código de Reserva.</p>
+            </div>
+            <div class="col-md-10 mx-auto col-lg-5">
+                <form class="p-4 p-md-5 border rounded-3 bg-light">
+                    <select id="tipoBusqueda" class="form-select">
+                        <option value="dni">Por DNI</option>
+                        <option value="codigo">Por Código</option>
+                    </select>
+                    <br>
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="valorBusqueda" placeholder="Ingrese DNI o Código de Reserva">
+                        <label for="valorBusqueda">DNI o Código de Reserva</label>
+                    </div>
+                    <button class="w-100 btn btn-lg btn-primary" type="button" id="btnBuscar">Buscar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+<section class="my-4 py-4">
+    <div class="container">
+        <p id="mensajeNoDatos" style="display: none;"></p>
+        <div id="tarjetasResultados" class="row row-cols-1 row-cols-md-3 g-4" style="display: none;">
+            <!-- Aquí se mostrarán los resultados -->
+        </div>
+    </div>
+    <br>
+</section>
+
+
+
+
+
+</body>
+<div th:replace="footer1 :: footer"></div>
+<script>
+ $(document).ready(function () {
+            $("#btnBuscar").click(function () {
+                var tipo = $("#tipoBusqueda").val();
+                var valor = $("#valorBusqueda").val();
+
+                $.ajax({
+                    url: "/reservas/buscarReserva/" + tipo + "/" + valor,
+                    type: "GET",
+                    dataType: "json",
+                    success: function (data) {
+                        // Lógica para mostrar los resultados o el mensaje
+                        if (data.length > 0) {
+                            mostrarResultados(data);
+                        } else {
+                            mostrarMensaje("No se encontraron datos.");
+                        }
+                    },
+                    error: function (error) {
+                        console.log("Error: " + error);
+                    }
+                });
+            });
+
+            function mostrarResultados(reservas) {
+                // Limpiar las tarjetas antes de agregar nuevos resultados
+                $("#tarjetasResultados").empty();
+
+                // Iterar sobre las reservas y agregarlas a las tarjetas
+                $.each(reservas, function (index, reserva) {
+                    var tarjeta = "<div class='col'>" +
+                        "<div class='card h-100'>" +
+                        "<div class='card-body'>" +
+                        "<h5 class='card-title'>" + reserva.nombre + "</h5>" +
+                        "<p class='card-text'><strong>Fecha:</strong> " + reserva.fecha + "</p>" +
+                        "<p class='card-text'><strong>Horario:</strong> " + reserva.rangoHorario + "</p>" +
+                        "<p class='card-text'><strong>Mesa:</strong> " + reserva.mesa.numero + "</p>" +
+                        "<p class='card-text'><strong>Cantidad de Personas:</strong> " + reserva.cantPers + "</p>" +
+                        "<p class='card-text'><strong>Email:</strong> " + reserva.email + "</p>" +
+                        "<p class='card-text'><strong>DNI:</strong> " + reserva.dni + "</p>" +
+                        "<p class='card-text'><strong>Código:</strong> " + reserva.codigo + "</p>" +
+                        "</div>" +
+                        "<div class='card-footer'>" +
+                        "<a href='/reservas/eliminar/" + reserva.id + "' class='btn btn-danger' onclick='return confirm(\"¿Estás seguro de que deseas cancelar esta reserva?\")'>Cancelar</a>" +
+                        "</div>" +
+                        "</div>" +
+                        "</div>";
+                    $("#tarjetasResultados").append(tarjeta);
+                });
+
+                // Mostrar las tarjetas y ocultar el mensaje
+                $("#tarjetasResultados").show();
+                $("#mensajeNoDatos").hide();
+            }
+
+            function mostrarMensaje(mensaje) {
+                // Ocultar las tarjetas y mostrar el mensaje en color rojo
+                $("#tarjetasResultados").hide();
+                $("#mensajeNoDatos").text(mensaje).css("color", "red").show();
+            }
+        });
+</script>
+<style>
+    /* Estilos personalizados para las tarjetas */
+.card {
+    border: 1px solid #e9ecef;
+    border-radius: 0.25rem;
+}
+
+.card-body {
+    padding: 1.25rem;
+}
+
+.card-title {
+    margin-bottom: 0.75rem;
+}
+
+.card-text {
+    margin-bottom: 0.5rem;
+}
+
+.card-footer {
+    padding: 0.75rem 1.25rem;
+    background-color: #f8f9fa;
+    border-top: 1px solid #e9ecef;
+}
+
+.btn-danger {
+    color: #fff;
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+.btn-danger:hover {
+    color: #fff;
+    background-color: #c82333;
+    border-color: #bd2130;
+}
+
+.btn-danger:focus {
+    color: #fff;
+    background-color: #c82333;
+    border-color: #bd2130;
+    box-shadow: 0 0 0 0.2rem rgba(225, 83, 97, 0.5);
+}
+
+</style>
+</html>

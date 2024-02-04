@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Detalles del Pedido</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+
+
+</head>
+<body>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+
+<script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.7.0.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.5.3/jspdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.6/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
+
+
+<div th:replace="navbar1 :: navbar"></div>
+
+<section style="background-color: #eee;">
+    <div class="container py-5">
+        <div class="row">
+            <div class="col">
+                <nav aria-label="breadcrumb" class="bg-light rounded-3 p-3 mb-4">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="/">Home</a></li>
+                        <li th:if="${#authorization.expression('hasAnyRole(''ADMIN'', ''EMPLEADO'')')}" class="breadcrumb-item"><a href="/pedidos">Pedidos</a></li>
+                        <li th:if="${#authorization.expression('hasRole(''CLIENTE'')')}" class="breadcrumb-item"><a href="/perfil/pedidos">Mis pedidos</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Detalles del pedido</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+        <div class="px-4 my-4 text-center" bis_skin_checked="1">
+            <img class="d-block mx-auto mb-4" src="/images/info-pedido-icon.png" alt="" width="120" height="120">
+            <div class="d-flex justify-content-center align-items-center mx-auto gap-3">
+                <h1 class="display-5 fw-bold">Datos del Pedido</h1>
+            </div>
+            <div class="col-lg-6 mx-auto" bis_skin_checked="1">
+                <p class="lead mb-4">Informacion sobre el pedido.</p>
+            </div>
+        </div>
+        <div class="col-lg-8 mx-auto">
+            <div class="card mb-4">
+                <div class="card-body" id="ticket">
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <p class="mb-0">ID del pedido:</p>
+                        </div>
+                        <div class="col-sm-9">
+                            <p class="text-muted mb-0"><span id="pedidoId" th:text="${pedido.pedidoId}"></span></span></p>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <p class="mb-0">Nombre Cliente:</p>
+                        </div>
+                        <div class="col-sm-9">
+                            <p class="text-muted mb-0"><span id="nombreCliente" th:text="${pedido.usuario.nombre}"></span></p>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <p class="mb-0">Apellido Cliente:</p>
+                        </div>
+                        <div class="col-sm-9">
+                            <p class="text-muted mb-0"><span id="apellidoCliente" th:text="${pedido.usuario.apellido}"></span></p>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <p class="mb-0">Fecha del Pedido:</p>
+                        </div>
+                        <div class="col-sm-9">
+                            <p class="text-muted mb-0"><span id="fechaPedido" th:text="${pedido.fecha}"></span></p>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <p class="mb-0">Estado del Pedido:</p>
+                        </div>
+                        <div class="col-sm-9">
+                            <p class="text-muted mb-0"><span id="estadoPedido" th:text="${pedido.estado}"></span></p>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <p class="mb-0">Mesa:</p>
+                        </div>
+                        <div class="col-sm-9">
+                            <p class="text-muted mb-0"><span id="numeroMesa" th:text="${pedido.mesa.numero}"></span></p>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <p class="mb-0">Total:</p>
+                        </div>
+                        <div class="col-sm-9">
+                            <p class="text-muted mb-0"><span id="totalPedido" th:text="${pedido.total}"></span></p>
+                        </div>
+                    </div>
+                    <hr th:if="${ pedido.estado eq 'PAGADO'}">
+                    <div class="row justify-content-center" th:if="${ pedido.estado eq 'PAGADO'}">
+                        <div class="col-sm-3">
+                            <button id="generarTicket" class="btn btn-secondary" th:if="${ pedido.estado eq 'PAGADO'}">Generar Ticket</button>
+                        </div>
+                    </div>
+                    <!-- Agrega más bloques de información según sea necesario -->
+                </div>
+            </div>
+        </div>
+        <div class="px-4 mt-5 mb-2 text-center" bis_skin_checked="1">
+            <img class="d-block mx-auto mb-4" src="/images/detalle-pedidos-icon.png" alt="" width="120" height="120">
+            <div class="d-flex justify-content-center align-items-center mx-auto gap-3">
+                <h1 class="display-5 fw-bold">Detalles del Pedido</h1>
+            </div>
+            <div class="col-lg-6 mx-auto" bis_skin_checked="1">
+                <p class="lead mb-4">Todos los productos asociados al pedido.</p>
+                <div class="d-grid gap-2 d-sm-flex justify-content-sm-center" bis_skin_checked="1" >
+                    <a class="btn btn-outline-secondary btn-lg px-4" th:href="@{'/detallePedidos/nuevoDetallePedido/' + ${pedido.pedidoId}}" th:if="${ pedido.estado eq 'PENDIENTE'}">Agregar Detalle</a>
+                </div>
+            </div>
+        </div>
+        <table class="table table-striped" id="tablaDetalle1">
+            <thead>
+            <tr>
+                <th th:if="${#authorization.expression('hasAnyRole(''ADMIN'', ''EMPLEADO'')')}">ID</th>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio Unitario</th>
+                <th>Subtotal</th>
+                <th th:if="${pedido.estado eq 'PENDIENTE'}">Acciones</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="detalle : ${detalles}">
+                <td th:text="${detalle.detallePedidoId}" th:if="${#authorization.expression('hasAnyRole(''ADMIN'', ''EMPLEADO'')')}"></td>
+                <td th:text="${detalle.producto.nombre}"></td>
+                <td th:text="${detalle.cantidad}"></td>
+                <td th:text="${detalle.precioUnitario}"></td>
+                <td th:text="${detalle.subtotal}"></td>
+                <td th:if="${pedido.estado eq 'PENDIENTE'}">
+                    <a th:href="@{/detallePedidos/editar/{id}(id=${detalle.detallePedidoId})}" class="btn btn-primary" th:if="${pedido.estado eq 'PENDIENTE'}">Editar</a>
+                    <a th:href="@{/detallePedidos/eliminar/{id}(id=${detalle.detallePedidoId})}" class="btn btn-danger" onclick="return confirm('¿Estás seguro de que quieres eliminar este detalle?')" th:if="${pedido.estado eq 'PENDIENTE'}">Eliminar</a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <div id="qr_code" style="display:none;">
+    </div>
+</section>
+
+
+
+<!--
+<div class="container" >
+    <div id="ticket">
+        <h2>Datos del Pedido</h2>
+        <hr style="border: 1px solid #000;">
+        <p>ID del Pedido: <span id="pedidoId" th:text="${pedido.pedidoId}"></span></p>
+        <p>Nombre Cliente: <span id="nombreCliente" th:text="${pedido.usuario.nombre}"></span></p>
+        <p>Apellido Cliente: <span id="apellidoCliente" th:text="${pedido.usuario.apellido}"></span></p>
+        <p>Fecha del Pedido: <span id="fechaPedido" th:text="${pedido.fecha}"></span></p>
+        <p>Estado del Pedido: <span id="estadoPedido" th:text="${pedido.estado}"></span></p>
+        <p>Mesa: <span id="numeroMesa" th:text="${pedido.mesa.numero}"></span></p>
+        <p>Total: <span id="totalPedido" th:text="${pedido.total}"></span></p>
+        <button id="generarTicket" class="btn btn-primary" th:if="${ pedido.estado eq 'PAGADO'}">Generar Ticket</button>
+        <hr style="border: 1px solid #000;">
+    </div>
+    <br>
+
+    <h3>Detalles del Pedido</h3>
+    <a class="btn btn-primary" th:href="@{'/detallePedidos/nuevoDetallePedido/' + ${pedido.pedidoId}}" th:if="${ pedido.estado eq 'PENDIENTE'}">Agregar Detalle</a>
+    <br>
+    <br>
+    <table class="table table-striped" id="tablaDetalle1">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Producto</th>
+            <th>Cantidad</th>
+            <th>Precio Unitario</th>
+            <th>Subtotal</th>
+            <th th:if="${pedido.estado eq 'PENDIENTE'}">Acciones</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="detalle : ${detalles}">
+            <td th:text="${detalle.detallePedidoId}"></td>
+            <td th:text="${detalle.producto.nombre}"></td>
+            <td th:text="${detalle.cantidad}"></td>
+            <td th:text="${detalle.precioUnitario}"></td>
+            <td th:text="${detalle.subtotal}"></td>
+            <td th:if="${pedido.estado eq 'PENDIENTE'}">
+                <a th:href="@{/detallePedidos/editar/{id}(id=${detalle.detallePedidoId})}" class="btn btn-primary" th:if="${pedido.estado eq 'PENDIENTE'}">Editar</a>
+                <a th:href="@{/detallePedidos/eliminar/{id}(id=${detalle.detallePedidoId})}" class="btn btn-danger" onclick="return confirm('¿Estás seguro de que quieres eliminar este detalle?')" th:if="${pedido.estado eq 'PENDIENTE'}">Eliminar</a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+<div id="qr_code" style="display:none;">
+</div>
+-->
+</body>
+<div th:replace="footer1 :: footer"></div>
+<script>
+$(document).ready(function() {
+    $('#tablaDetalle1').DataTable({
+
+    language:{
+            "decimal":        "",
+            "emptyTable":     "No hay datos disponibles en la tabla",
+            "info":           "Mostrando _START_ a _END_ de _TOTAL_ entradas",
+            "infoEmpty":      "Mostrando 0 a 0 de 0 entradas",
+            "infoFiltered":   "(filtrado de _MAX_ entradas totales)",
+            "infoPostFix":    "",
+            "thousands":      ",",
+            "lengthMenu":     "Mostrar _MENU_ entradas",
+            "loadingRecords": "Cargando...",
+            "processing":     "Procesando...",
+            "search":         "Buscar:",
+            "zeroRecords":    "No se encontraron registros coincidentes",
+            "paginate": {
+                "first":      "Primera",
+                "last":       "Última",
+                "next":       "Siguiente",
+                "previous":   "Anterior"
+            },
+            "aria": {
+                "sortAscending":  ": activar para ordenar la columna ascendente",
+                "sortDescending": ": activar para ordenar la columna descendente"
+            }
+        },
+         columnDefs: [
+            {
+                targets: '_all',
+                className: 'text-center'
+            },
+            {
+                targets: [-1], // Última columna
+                orderable: false
+            }
+        ]
+
+});
+
+ // Generar QR
+    var qrcode = new QRCode("qr_code", {
+    text: "http://localhost:8080/menu",
+    width: 128,
+    height: 128,
+    colorDark : "#000000",
+    colorLight : "#ffffff",
+    correctLevel : QRCode.CorrectLevel.H
+    });
+
+
+$('#generarTicket').click(function () {
+    var doc = new jsPDF();
+
+    // Estilos del Ticket
+    doc.setFillColor(255, 255, 255); // Fondo blanco
+    doc.rect(10, 10, 190, 110, 'F');
+
+
+    // Agregar contenido al PDF
+    doc.setFontSize(18);
+    doc.setTextColor(0, 0, 0); // Texto negro
+    doc.text('Ticket del Pedido', 75, 10);
+    doc.line(20, 20, 190, 20); // Línea horizontal
+
+    // Datos del Pedido
+    doc.setFontSize(12);
+    doc.text('ID del Pedido: ' + $('#pedidoId').text(), 20, 30);
+    doc.text('Nombre Cliente: ' + $('#nombreCliente').text(), 20, 40);
+    doc.text('Apellido Cliente: ' + $('#apellidoCliente').text(), 20, 50);
+    doc.text('Fecha del Pedido: ' + $('#fechaPedido').text(), 20, 60);
+    doc.text('Estado del Pedido: ' + $('#estadoPedido').text(), 20, 70);
+    doc.text('Mesa: ' + $('#numeroMesa').text(), 20, 80);
+    doc.text('Total: ' + $('#totalPedido').text(), 20, 90);
+
+    doc.line(20, 100, 190, 100); // Línea horizontal
+
+   // Obtener el ID del pedido
+    var pedidoId = $('#pedidoId').text();
+
+
+
+
+
+
+    // Obtener la imagen base64 del código QR
+    let base64Image = $('#qr_code img').attr('src');
+
+
+     // Agregar QR al PDF
+    doc.addImage(base64Image, 'png',77, 115, 50, 50);
+    doc.text('Escanee y vea nuestro menu', 75, 110);
+
+
+    // Guardar el PDF con el ID del pedido en el nombre
+    doc.save("ticket_pedido_" + pedidoId + ".pdf");
+});
+
+});
+</script>
+</html>

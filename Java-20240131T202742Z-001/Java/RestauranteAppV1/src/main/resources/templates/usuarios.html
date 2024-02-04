@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Usuarios</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+</head>
+<body>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+
+<script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.7.0.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.5/xlsx.full.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.5.3/jspdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.6/jspdf.plugin.autotable.min.js"></script>
+
+<div th:replace="navbar1 :: navbar"></div>
+
+<section style="background-color: #eee;">
+    <div class="container py-5">
+        <div class="row">
+            <div class="col">
+              <nav aria-label="breadcrumb" class="bg-light rounded-3 p-3 mb-4">
+                <ol class="breadcrumb mb-0">
+                  <li class="breadcrumb-item"><a href="/">Home</a></li>
+                  <li class="breadcrumb-item active" aria-current="page">Usuarios</li>
+                </ol>
+              </nav>
+            </div>
+        </div>
+        <div class="px-4 my-4 text-center" bis_skin_checked="1">
+            <img class="d-block mx-auto mb-4" src="/images/usuarios-icon.png" alt="" width="120" height="120">
+            <div class="d-flex justify-content-center align-items-center mx-auto gap-3">
+              <h1 class="display-5 fw-bold">Usuarios</h1>
+              <a href="/usuarios/nuevoUsuario" class="btn btn-secondary" style="font-size: 1.25em;">+</a>
+            </div>
+            <div class="col-lg-6 mx-auto" bis_skin_checked="1">
+              <p class="lead mb-4">Todos los usuarios.</p>
+            </div>
+        </div>
+      <div class="container text-center">
+        <!-- Agregar sección para mostrar mensaje de error -->
+        <div th:if="${error}" class="alert alert-danger" role="alert">
+          <p th:text="${error}"></p>
+        </div>
+        <button id="generarPDF" class="btn btn-danger">Exportar datos en PDF</button>
+        <button id="generarExcelUsuarios" class="btn btn-success">Exportar datos a Excel</button>
+        <br>
+        <br>
+        <div class="col-md-6">
+          <div class="input-group mb-3">
+            <span class="input-group-text" id="rol-label">Filtrar por Rol:</span>
+            <select id="rolFilterUsuarios" class="form-select">
+              <option value="">Todos los roles</option>
+              <option value="ADMIN">ADMIN</option>
+              <option value="EMPLEADO">EMPLEADO</option>
+              <option value="CLIENTE">CLIENTE</option>
+            </select>
+            <button class="btn btn-outline-secondary" type="button" id="clear-rol-usuarios">Borrar Filtro</button>
+          </div>
+        </div>
+        <table class="table table-striped table-hover" id="tablaUsuarios1">
+          <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Apellido</th>
+            <th>Usuario</th>
+            <th>Rol</th>
+            <th>Telefono</th>
+            <th>Pais</th>
+            <th>Provincia</th>
+            <th>Ciudad</th>
+            <th th:if="${#authorization.expression('hasRole(''ADMIN'')')}">Acciones</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr th:each="usuario : ${listaUsuarios}">
+            <td id="nombre" th:text="${usuario.nombre}"></td>
+            <td id="apellido" th:text="${usuario.apellido}"></td>
+            <td id="username" th:text="${usuario.username}"></td>
+            <td id="rol" th:text="${usuario.rol.nombre}"></td>
+            <td id="telefono" th:text="${usuario.telefono}"></td>
+            <td id="pais" th:text="${usuario.pais?.nombre}"></td>
+            <td id="provincia" th:text="${usuario.provincia?.nombre}"></td>
+            <td id="ciudad" th:text="${usuario.ciudad?.nombre}"></td>
+            <td th:if="${#authorization.expression('hasRole(''ADMIN'')')}">
+              <a th:href="@{'/usuarios/editarUsuario/' + ${usuario.usuarioId}}" class="btn btn-primary">Editar</a>
+              <a th:href="@{'/usuarios/eliminarUsuario/' + ${usuario.usuarioId}}" class="btn btn-danger" onclick="return confirm('¿Estás seguro de que deseas eliminar este usuario?')">Eliminar</a>
+            </td>
+          </tr>
+
+          </tbody>
+        </table>
+      </div>
+    </div>
+</section>
+
+
+
+</body>
+<div th:replace="footer1 :: footer"></div>
+<style>
+  div#tablaUsuarios1_length {
+    text-align: left;
+}
+</style>
+<script>
+    $(document).ready(function() {
+    var table = $('#tablaUsuarios1').DataTable({
+
+
+    language:{
+            "decimal":        "",
+            "emptyTable":     "No hay datos disponibles en la tabla",
+            "info":           "Mostrando _START_ a _END_ de _TOTAL_ entradas",
+            "infoEmpty":      "Mostrando 0 a 0 de 0 entradas",
+            "infoFiltered":   "(filtrado de _MAX_ entradas totales)",
+            "infoPostFix":    "",
+            "thousands":      ",",
+            "lengthMenu":     "Mostrar _MENU_ entradas",
+            "loadingRecords": "Cargando...",
+            "processing":     "Procesando...",
+            "search":         "Buscar:",
+            "zeroRecords":    "No se encontraron registros coincidentes",
+            "paginate": {
+                "first":      "Primera",
+                "last":       "Última",
+                "next":       "Siguiente",
+                "previous":   "Anterior"
+            },
+            "aria": {
+                "sortAscending":  ": activar para ordenar la columna ascendente",
+                "sortDescending": ": activar para ordenar la columna descendente"
+            }
+        },
+        "lengthMenu": [ [5, 10, 25, 50, -1], [5, 10, 25, 50, "Todas"] ],
+        pageLength: 10,
+         columnDefs: [
+            {
+                targets: '_all',
+                className: 'text-center'
+            },
+            {
+                targets: [-1], // Última columna
+                orderable: false
+            }
+        ]
+});
+
+    // Agregar lógica para filtrar por rol en usuarios
+    $('#rolFilterUsuarios').on('change', function() {
+        var rolSeleccionado = $(this).val();
+
+        // Verificar si se seleccionó "Todos los roles"
+        if (rolSeleccionado === '') {
+            // Eliminar el filtro de rol
+            table.column(3).search('').draw();
+        } else {
+            // Aplicar el filtro de rol
+            table.column(3)
+                .search('^' + rolSeleccionado + '$', true, false)
+                .draw();
+        }
+    });
+
+    // Borrar filtro de rol en usuarios
+    $('#clear-rol-usuarios').click(function() {
+        $('#rolFilterUsuarios').val('');
+        table.column(3).search('').draw();
+    });
+
+
+
+$('#generarPDF').click(function() {
+    // Obtener los datos de la tabla y convertirlos en un arreglo de objetos
+    var datos = [];
+    $('#tablaUsuarios1 tbody tr').each(function() {
+        var fila = {};
+        fila.nombre = $(this).find('td#nombre').text();
+        fila.apellido = $(this).find('td#apellido').text();
+        fila.username = $(this).find('td#username').text();
+        fila.rol = $(this).find('td#rol').text();
+        fila.telefono = $(this).find('td#telefono').text();
+        fila.pais = $(this).find('td#pais').text();
+        fila.provincia = $(this).find('td#provincia').text();
+        fila.ciudad = $(this).find('td#ciudad').text();
+        datos.push(fila);
+    });
+
+    // Crear un nuevo arreglo con solo las columnas que deseas
+    var columnas = datos.map(function(fila) {
+        return {
+            nombre: fila.nombre,
+            apellido: fila.apellido,
+            username: fila.username,
+            rol: fila.rol,
+            telefono: fila.telefono,
+            pais: fila.pais,
+            provincia: fila.provincia,
+            ciudad: fila.ciudad
+        };
+    });
+
+    // Crear el PDF
+    var doc = new jsPDF();
+    doc.autoTable({
+        columns: [
+            {header: 'Nombre', dataKey: 'nombre'},
+            {header: 'Apellido', dataKey: 'apellido'},
+            {header: 'Usuario', dataKey: 'username'},
+            {header: 'Rol', dataKey: 'rol'},
+            {header: 'Telefono', dataKey: 'telefono'},
+            {header: 'Pais', dataKey: 'pais'},
+            {header: 'Provincia', dataKey: 'provincia'},
+            {header: 'Ciudad', dataKey: 'ciudad'}
+        ],
+        body: columnas
+    });
+
+    var fecha = new Date();
+    var formatoFecha = fecha.getDate() + '_' + (fecha.getMonth() + 1) + '_' + fecha.getFullYear();
+    doc.save("usuarios_" + formatoFecha + ".pdf");
+});
+
+
+      $('#generarExcelUsuarios').click(function () {
+      var datos = [];
+      $('#tablaUsuarios1 tbody tr').each(function () {
+        var fila = {};
+        fila.nombre = $(this).find('td#nombre').text();
+        fila.apellido = $(this).find('td#apellido').text();
+        fila.username = $(this).find('td#username').text();
+        fila.rol = $(this).find('td#rol').text();
+        fila.telefono = $(this).find('td#telefono').text();
+        fila.pais = $(this).find('td#pais').text();
+        fila.provincia = $(this).find('td#provincia').text();
+        fila.ciudad = $(this).find('td#ciudad').text();
+        datos.push(fila);
+      });
+
+      var ws = XLSX.utils.json_to_sheet(datos);
+      var wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Usuarios");
+
+      var fecha = new Date();
+      var formatoFecha = fecha.getDate() + '_' + (fecha.getMonth() + 1) + '_' + fecha.getFullYear();
+      XLSX.writeFile(wb, "usuarios_" + formatoFecha + ".xlsx");
+    });
+
+});
+</script>
+</html>

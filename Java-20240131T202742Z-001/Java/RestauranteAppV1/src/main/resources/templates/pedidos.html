@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pedidos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+</head>
+<body>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.2/moment.min.js"></script>
+<script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.7.0.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.5/xlsx.full.min.js"></script>
+
+<script src="https://cdn.datatables.net/datetime/1.5.1/js/dataTables.dateTime.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.5.3/jspdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.6/jspdf.plugin.autotable.min.js"></script>
+
+<div th:replace="navbar1 :: navbar"></div>
+
+<section style="background-color: #eee;">
+    <div class="container py-5">
+        <div class="row">
+            <div class="col">
+                <nav aria-label="breadcrumb" class="bg-light rounded-3 p-3 mb-4">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="/">Home</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Pedidos</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+        <div class="px-4 my-4 text-center" bis_skin_checked="1">
+            <img class="d-block mx-auto mb-4" src="/images/pedidos-icon.png" alt="" width="120" height="120">
+            <div class="d-flex justify-content-center align-items-center mx-auto gap-3">
+                <h1 class="display-5 fw-bold">Pedidos</h1>
+                <a href="/pedidos/nuevoPedido" class="btn btn-secondary" style="font-size: 1.25em;">+</a>
+            </div>
+            <div class="col-lg-6 mx-auto" bis_skin_checked="1">
+                <p class="lead mb-4">Todos los pedidos.</p>
+            </div>
+        </div>
+        <div class="container text-center">
+            <button id="generarPDF" class="btn btn-danger">Exportar datos en PDF</button>
+            <button id="generarExcel" class="btn btn-success">Exportar datos en Excel</button>
+            <br>
+            <br>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" id="mesa-label">Filtrar por Mesa:</span>
+                        <select id="mesaFilter" class="form-select">
+                            <option value="">Todas las mesas</option>
+                        </select>
+                        <button class="btn btn-outline-secondary" type="button" id="clear-mesa">Borrar Filtro</button>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" id="estado-label">Filtrar por Estado:</span>
+                        <select id="estadoFilter" class="form-select">
+                            <option value="">Todos los estados</option>
+                            <option value="PENDIENTE">PENDIENTE</option>
+                            <option value="EN PREPARACION">EN PREPARACION</option>
+                            <option value="COMPLETADO">COMPLETADO</option>
+                            <option value="PAGADO">PAGADO</option>
+                        </select>
+                        <button class="btn btn-outline-secondary" type="button" id="clear-estado">Borrar Filtro</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" id="min-label">Desde:</span>
+                        <input type="date" id="min" name="min" class="form-control" aria-describedby="min-label">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" id="max-label">Hasta:</span>
+                        <input type="date" id="max" name="max" class="form-control" aria-describedby="max-label">
+                        <button id="clear-dates" class="btn btn-secondary">Limpiar fechas</button>
+                    </div>
+                </div>
+            </div>
+
+            <table class="table table-striped table-hover" id="tablaPedidos1">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Cliente</th>
+                    <th>Mesa</th>
+                    <th>Estado</th>
+                    <th>Fecha</th>
+                    <th>Total</th>
+                    <th>Mozo</th>
+                    <th th:if="${#authorization.expression('hasAnyRole(''ADMIN'', ''EMPLEADO'')')}">Acciones</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="pedido : ${listaPedidos}">
+                    <td id="id" th:text="${pedido.pedidoId}"></td>
+                    <td id="nombreUsuario" th:text="${pedido.usuario.nombre}"></td>
+                    <td id="numeroMesa" th:text="${pedido.mesa.numero}"></td>
+                    <td id="estado" th:text="${pedido.estado}"></td>
+                    <td id="fecha" th:text="${#dates.format(pedido.fecha, 'dd/MM/yyyy HH:mm')}"></td>
+                    <td id="total" th:text="${pedido.total}"></td>
+                    <td id="mozo" th:text="${pedido.creadorPedido.apellido}"></td>
+                    <td th:if="${#authorization.expression('hasAnyRole(''ADMIN'', ''EMPLEADO'')')}">
+                        <a th:href="@{/pedidos/detalles/{id}(id=${pedido.pedidoId})}" class="btn btn-info">Detalles</a>
+                        <a th:href="@{/pedidos/editar/{id}(id=${pedido.pedidoId})}" class="btn btn-primary" th:if="${#authorization.expression('hasAnyRole(''ADMIN'', ''EMPLEADO'')') and pedido.estado ne 'PAGADO'}">Editar</a>
+                        <a th:href="@{/pedidos/eliminar/{id}(id=${pedido.pedidoId})}" class="btn btn-danger" onclick="return confirm('¿Estás seguro de que quieres eliminar este pedido?')" th:if="${pedido.estado eq 'PENDIENTE' or pedido.estado eq 'PAGADO'}">Eliminar</a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</section>
+
+
+
+
+
+
+
+
+
+</body>
+<div th:replace="footer1 :: footer"></div>
+<style>
+    div#tablaPedidos1_length {
+    text-align: left;
+}
+</style>
+<script>
+$(document).ready(function() {
+   var table = $('#tablaPedidos1').DataTable({
+
+    language:{
+            "decimal":        "",
+            "emptyTable":     "No hay datos disponibles en la tabla",
+            "info":           "Mostrando _START_ a _END_ de _TOTAL_ entradas",
+            "infoEmpty":      "Mostrando 0 a 0 de 0 entradas",
+            "infoFiltered":   "(filtrado de _MAX_ entradas totales)",
+            "infoPostFix":    "",
+            "thousands":      ",",
+            "lengthMenu":     "Mostrar _MENU_ entradas",
+            "loadingRecords": "Cargando...",
+            "processing":     "Procesando...",
+            "search":         "Buscar:",
+            "zeroRecords":    "No se encontraron registros coincidentes",
+            "paginate": {
+                "first":      "Primera",
+                "last":       "Última",
+                "next":       "Siguiente",
+                "previous":   "Anterior"
+            },
+            "aria": {
+                "sortAscending":  ": activar para ordenar la columna ascendente",
+                "sortDescending": ": activar para ordenar la columna descendente"
+            }
+        },
+        "lengthMenu": [ [5, 10, 25, 50, -1], [5, 10, 25, 50, "Todas"] ],
+        pageLength: 10,
+         columnDefs: [
+            {
+                targets: '_all',
+                className: 'text-center'
+            },
+            {
+                targets: [-1], // Última columna
+                orderable: false
+            }
+        ]
+
+});
+
+            // filtrar x mesa
+            $.ajax({
+            url: '/mesas/todasMesas',
+            method: 'GET',
+            success: function (mesas) {
+                var mesaFilter = $('#mesaFilter');
+                mesaFilter.empty(); // Limpiar opciones existentes
+
+                // Agregar opción predeterminada
+                mesaFilter.append($('<option>', {
+                    value: '',  // Ajusta según el atributo que quieras utilizar
+                    text: 'Todas las mesas'
+                }));
+
+                // Agregar opciones de mesas dinámicamente
+                mesas.forEach(function (mesa) {
+                    mesaFilter.append($('<option>', {
+                        value: mesa.numero,  // Ajusta según el atributo que quieras utilizar
+                        text: 'Mesa ' + mesa.numero
+                    }));
+                });
+            },
+            error: function () {
+                console.error('Error al obtener la lista de mesas');
+            }
+        });
+
+
+        // Agregar lógica para filtrar por mesa
+        $('#mesaFilter').on('change', function() {
+        var mesaSeleccionada = $(this).val();
+
+        // Verificar si se seleccionó "Todas las mesas"
+            if (mesaSeleccionada === '') {
+                // Eliminar el filtro de mesa
+                table.column(2).search('').draw();
+            } else {
+                // Aplicar el filtro de mesa
+                table.column(2)
+                    .search('^' + mesaSeleccionada + '$', true, false)
+                    .draw();
+            }
+        });
+
+        // Borrar filtro de estado
+        $('#clear-mesa').click(function() {
+            $('#mesaFilter').val('');
+            table.column(2).search('').draw(); // Borra el filtro y redibuja la tabla
+        });
+
+
+
+
+
+
+
+
+    // Agregar lógica para filtrar por estado
+    $('#estadoFilter').on('change', function() {
+        var estadoSeleccionado = $(this).val();
+        table.column(3)  // Columna de estado (ajusta el índice según tu tabla)
+            .search(estadoSeleccionado)
+            .draw();
+    });
+
+    // Borrar filtro de estado
+    $('#clear-estado').click(function() {
+        $('#estadoFilter').val('');
+        table.column(3).search('').draw(); // Borra el filtro y redibuja la tabla
+    });
+
+
+    // Definir la función de filtrado por fechas
+
+    $.fn.dataTable.ext.search.push(
+        function( settings, data, dataIndex ) {
+            // Obtener las fechas seleccionadas por el usuario
+            var minDate = $('#min').val();
+            var maxDate = $('#max').val();
+
+            // Obtener la fecha de la fila actual y convertirla a un objeto Moment
+            var date = moment(data[4], 'DD/MM/YYYY HH:mm'); // La fecha está en la quinta columna
+
+            // Si no hay fechas seleccionadas, mostrar todas las filas
+            if ( minDate == '' && maxDate == '' ) {
+                return true;
+            }
+
+            // Si hay fecha desde, pero no fecha hasta, mostrar las filas con fecha mayor o igual a la fecha desde
+            if ( minDate != '' && maxDate == '' ) {
+                return date.isSameOrAfter(minDate);
+            }
+
+            // Si hay fecha hasta, pero no fecha desde, mostrar las filas con fecha menor o igual a la fecha hasta
+            if ( minDate == '' && maxDate != '' ) {
+                return date.isSameOrBefore(maxDate);
+            }
+
+            // Si hay fecha desde y fecha hasta, mostrar las filas con fecha entre el rango seleccionado
+            if ( minDate != '' && maxDate != '' ) {
+                return date.isBetween(minDate, maxDate);
+            }
+        }
+    );
+
+    // Actualizar el filtrado cada vez que cambia el valor de los elementos input
+
+    $('#min, #max').change( function() {
+        table.draw();
+    } );
+
+
+    // Borrar filtro fechas
+
+    $('#clear-dates').click( function() {
+          // Vaciar los valores de los elementos input
+          $('#min').val('');
+          $('#max').val('');
+            table.draw();
+    });
+
+
+$('#generarPDF').click(function() {
+    // Obtener los datos de la tabla y convertirlos en un arreglo de objetos
+    var datos = [];
+    $('#tablaPedidos1 tbody tr').each(function() {
+      var fila = {};
+      fila.id = $(this).find('td#id').text();
+      fila.nombreUsuario = $(this).find('td#nombreUsuario').text();
+      fila.numeroMesa = $(this).find('td#numeroMesa').text();
+      fila.estado = $(this).find('td#estado').text();
+      fila.fecha = $(this).find('td#fecha').text();
+      fila.total= $(this).find('td#total').text();
+ fila.mozo= $(this).find('td#mozo').text();
+      datos.push(fila);
+    });
+
+    // Crear un nuevo arreglo con solo las columnas que deseas
+    var columnas = datos.map(function(fila) {
+      return {
+        id: fila.id,
+        nombreUsuario: fila.nombreUsuario,
+        numeroMesa: fila.numeroMesa,
+        estado: fila.estado,
+        fecha: fila.fecha,
+        total: fila.total,
+        mozo: fila.mozo
+      };
+    });
+
+    // Crear el PDF
+    var doc = new jsPDF();
+    doc.autoTable({
+      columns: [
+        {header: 'Id', dataKey: 'id'},
+        {header: 'Cliente', dataKey: 'nombreUsuario'},
+        {header: 'Mesa', dataKey: 'numeroMesa'},
+        {header: 'Estado', dataKey: 'estado'},
+        {header: 'Fecha', dataKey: 'fecha'},
+        {header: 'Total', dataKey: 'total'},
+        {header: 'Mozo', dataKey: 'mozo'}
+      ],
+      body: columnas
+    });
+
+    var fecha = new Date();
+    var formatoFecha = fecha.getDate() + '_' + (fecha.getMonth() + 1) + '_' + fecha.getFullYear();
+    doc.save("pedidos_" + formatoFecha + ".pdf");
+  });
+
+
+
+
+
+$('#generarExcel').click(function() {
+        // Obtener los datos de la tabla y convertirlos en un arreglo de objetos
+        var datos = [];
+        $('#tablaPedidos1 tbody tr').each(function() {
+            var fila = {};
+            fila.id = $(this).find('td#id').text();
+            fila.nombreUsuario = $(this).find('td#nombreUsuario').text();
+            fila.numeroMesa = $(this).find('td#numeroMesa').text();
+            fila.estado = $(this).find('td#estado').text();
+            fila.fecha = $(this).find('td#fecha').text();
+            fila.total = $(this).find('td#total').text();
+            fila.mozo = $(this).find('td#mozo').text();
+            datos.push(fila);
+        });
+
+        // Crear un nuevo arreglo con solo las columnas que deseas
+        var columnas = datos.map(function(fila) {
+            return {
+                id: fila.id,
+                nombreUsuario: fila.nombreUsuario,
+                numeroMesa: fila.numeroMesa,
+                estado: fila.estado,
+                fecha: fila.fecha,
+                total: fila.total,
+                mozo: fila.mozo
+            };
+        });
+
+        // Crear la hoja de cálculo de Excel
+        var ws = XLSX.utils.json_to_sheet(columnas);
+        var wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Pedidos");
+
+        // Guardar el archivo Excel
+        var fecha = new Date();
+        var formatoFecha = fecha.getDate() + '_' + (fecha.getMonth() + 1) + '_' + fecha.getFullYear();
+        XLSX.writeFile(wb, "pedidos_" + formatoFecha + ".xlsx");
+    });
+
+});
+</script>
+</html>

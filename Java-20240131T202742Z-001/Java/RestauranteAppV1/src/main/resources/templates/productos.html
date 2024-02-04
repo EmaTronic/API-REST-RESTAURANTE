@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Productos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+</head>
+<body>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+
+<script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.7.0.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.5/xlsx.full.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.5.3/jspdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.6/jspdf.plugin.autotable.min.js"></script>
+
+<div th:replace="navbar1 :: navbar"></div>
+
+<section style="background-color: #eee;">
+    <div class="container py-5">
+        <div class="row">
+            <div class="col">
+                <nav aria-label="breadcrumb" class="bg-light rounded-3 p-3 mb-4">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="/">Home</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Productos</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+        <div class="px-4 my-4 text-center" bis_skin_checked="1">
+            <img class="d-block mx-auto mb-4" src="/images/productos-icon.png" alt="" width="120" height="120">
+            <div class="d-flex justify-content-center align-items-center mx-auto gap-3">
+                <h1 class="display-5 fw-bold">Productos</h1>
+                <a href="/nuevoProducto" class="btn btn-secondary" style="font-size: 1.25em;">+</a>
+            </div>
+            <div class="col-lg-6 mx-auto" bis_skin_checked="1">
+                <p class="lead mb-4">Todos los productos.</p>
+            </div>
+        </div>
+
+        <div class="container text-center">
+            <button id="generarPDF" class="btn btn-danger" th:if="${#authorization.expression('hasAnyRole(''ADMIN'', ''EMPLEADO'')')}">Exportar datos en PDF</button>
+            <button id="generarExcelProductos" class="btn btn-success" th:if="${#authorization.expression('hasAnyRole(''ADMIN'', ''EMPLEADO'')')}">Exportar datos en Excel</button>
+            <br>
+            <br>
+            <div th:if="${error}" class="alert alert-danger" role="alert">
+                <p th:text="${error}"></p>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text">Filtrar por Categoría:</span>
+                        <select id="categoriaFilter" class="form-select">
+                            <option value="">Todas las categorías</option>
+                            <!-- Iterar sobre la lista de categorías y agregar opciones al select -->
+                            <th:block th:each="categoria : ${listaCategorias}">
+                                <option th:value="${categoria.nombre}" th:text="${categoria.nombre}" ></option>
+                            </th:block>
+                        </select>
+                        <button class="btn btn-outline-secondary" type="button" id="clear-categoria">Borrar Filtro</button>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text">Filtrar por Disponibilidad:</span>
+                        <select id="disponibilidadFilter" class="form-select">
+                            <option value="">Todas</option>
+                            <option value="Sí">Sí</option>
+                            <option value="No">No</option>
+                        </select>
+                        <button class="btn btn-outline-secondary" type="button" id="clear-disponibilidad">Borrar Filtro</button>
+                    </div>
+                </div>
+            </div>
+
+
+
+
+
+
+
+
+            <table class="table table-striped table-hover" id="tablaProductos1">
+                <thead >
+                <tr>
+                    <th scope="col" >Id</th>
+                    <th scope="col">Nombre</th>
+                    <th scope="col">Descripcion</th>
+                    <th scope="col">Precio</th>
+                    <th scope="col">Disponible</th>
+                    <th scope="col">Stock</th>
+                    <th scope="col">Categoria</th>
+                    <th scope="col" th:if="${#authorization.expression('hasAnyRole(''ADMIN'', ''EMPLEADO'')')}">Acciones</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="producto:${listaProductos}">
+                    <td id="id" th:text="${producto.producto_id}"></td>
+                    <td id="nombre" th:text="${producto.nombre}" ></td>
+                    <td id="descripcion" th:text="${producto.descripcion}" ></td>
+                    <td id="precio" th:text="${producto.precio}" ></td>
+                    <td id="disponible">
+                        <span th:if="${producto.disponible == 1}">Sí</span>
+                        <span th:if="${producto.disponible == 0}">No</span>
+                    </td>
+                    <td id="stock" th:text="${producto.stock}" ></td>
+                    <td id="categoria" th:text="${producto.categoria.nombre}" ></td>
+                    <td id="acciones" th:if="${#authorization.expression('hasAnyRole(''ADMIN'', ''EMPLEADO'')')}">
+                        <a class="btn btn-primary" th:href="@{'/editarProducto/' + ${producto.producto_id}}">Editar</a>
+                        &nbsp;
+                        <a class="btn btn-danger" th:href="@{'/eliminarProducto/' + ${producto.producto_id}}" onclick="return confirm('¿Estás seguro de que deseas eliminar este producto?')" th:if="${#authorization.expression('hasRole(''ADMIN'')')}">Eliminar</a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</section>
+
+
+
+
+
+
+
+</body>
+<div th:replace="footer1 :: footer"></div>
+<style>
+
+td#descripcion {
+    width: 20%;
+}
+    div#tablaProductos1_length {
+    text-align: left;
+}
+</style>
+<script>
+$(document).ready(function() {
+    var tablaProductos = $('#tablaProductos1').DataTable({
+
+    language:{
+            "decimal":        "",
+            "emptyTable":     "No hay datos disponibles en la tabla",
+            "info":           "Mostrando _START_ a _END_ de _TOTAL_ entradas",
+            "infoEmpty":      "Mostrando 0 a 0 de 0 entradas",
+            "infoFiltered":   "(filtrado de _MAX_ entradas totales)",
+            "infoPostFix":    "",
+            "thousands":      ",",
+            "lengthMenu":     "Mostrar _MENU_ entradas",
+            "loadingRecords": "Cargando...",
+            "processing":     "Procesando...",
+            "search":         "Buscar:",
+            "zeroRecords":    "No se encontraron registros coincidentes",
+            "paginate": {
+                "first":      "Primera",
+                "last":       "Última",
+                "next":       "Siguiente",
+                "previous":   "Anterior"
+            },
+            "aria": {
+                "sortAscending":  ": activar para ordenar la columna ascendente",
+                "sortDescending": ": activar para ordenar la columna descendente"
+            }
+        },
+        "lengthMenu": [ [5, 10, 25, 50, -1], [5, 10, 25, 50, "Todas"] ],
+        pageLength: 10,
+         columnDefs: [
+            {
+                targets: '_all',
+                className: 'text-center'
+            },
+            {
+                targets: [-1], // Última columna
+                orderable: false
+            }
+        ]
+
+});
+
+
+    // Agregamos la lógica para filtrar por categoría
+    $('#categoriaFilter').on('change', function() {
+        var categoriaSeleccionada = $(this).val();
+        tablaProductos.column(6)  // Columna de categoría (ajusta el índice según tu tabla)
+            .search(categoriaSeleccionada)
+            .draw();
+    });
+
+   // Borrar filtro categorías
+    $('#clear-categoria').click( function() {
+    $('#categoriaFilter').val('');
+    tablaProductos.column(6).search('').draw(); // Borra el filtro y redibuja la tabla
+    });
+
+
+
+    // Agregamos la lógica para filtrar por disponibilidad
+    $('#disponibilidadFilter').on('change', function () {
+        var disponibilidadSeleccionada = $(this).val();
+        tablaProductos.column(4) // Columna de disponibilidad (ajusta el índice según tu tabla)
+            .search(disponibilidadSeleccionada)
+            .draw();
+    });
+
+    // Borrar filtro disponibilidad
+    $('#clear-disponibilidad').click(function () {
+        $('#disponibilidadFilter').val('');
+        tablaProductos.column(4).search('').draw(); // Borra el filtro y redibuja la tabla
+    });
+
+  $('#generarPDF').click(function() {
+    // Obtener los datos de la tabla y convertirlos en un arreglo de objetos
+    var datos = [];
+    $('#tablaProductos1 tbody tr').each(function() {
+      var fila = {};
+      fila.id = $(this).find('td#id').text();
+      fila.nombre = $(this).find('td#nombre').text();
+      fila.descripcion = $(this).find('td#descripcion').text();
+      fila.precio = $(this).find('td#precio').text();
+      fila.stock = $(this).find('td#stock').text();
+      fila.categoria = $(this).find('td#categoria').text();
+      datos.push(fila);
+    });
+
+    // Crear un nuevo arreglo con solo las columnas que deseas
+    var columnas = datos.map(function(fila) {
+      return {
+        id: fila.id,
+        nombre: fila.nombre,
+        descripcion: fila.descripcion,
+        precio: fila.precio,
+        stock: fila.stock,
+        categoria: fila.categoria
+      };
+    });
+
+    // Crear el PDF
+    var doc = new jsPDF();
+    doc.autoTable({
+      columns: [
+        {header: 'Id', dataKey: 'id'},
+        {header: 'Nombre', dataKey: 'nombre'},
+        {header: 'Descripción', dataKey: 'descripcion'},
+        {header: 'Precio', dataKey: 'precio'},
+        {header: 'Stock', dataKey: 'stock'},
+        {header: 'Categoría', dataKey: 'categoria'}
+      ],
+      body: columnas
+    });
+
+    var fecha = new Date();
+    var formatoFecha = fecha.getDate() + '_' + (fecha.getMonth() + 1) + '_' + fecha.getFullYear();
+    doc.save("productos_" + formatoFecha + ".pdf");
+  });
+
+
+  $('#generarExcelProductos').click(function () {
+    // Obtener los datos de la tabla y convertirlos en un arreglo de objetos
+    var datos = [];
+    $('#tablaProductos1 tbody tr').each(function () {
+      var fila = {};
+      fila.id = $(this).find('td#id').text();
+      fila.nombre = $(this).find('td#nombre').text();
+      fila.descripcion = $(this).find('td#descripcion').text();
+      fila.precio = $(this).find('td#precio').text();
+      fila.stock = $(this).find('td#stock').text();
+      fila.categoria = $(this).find('td#categoria').text();
+      datos.push(fila);
+    });
+
+    // Crear un nuevo arreglo con solo las columnas que deseas
+    var columnas = datos.map(function (fila) {
+      return {
+        id: fila.id,
+        nombre: fila.nombre,
+        descripcion: fila.descripcion,
+        precio: fila.precio,
+        stock: fila.stock,
+        categoria: fila.categoria
+      };
+    });
+
+    // Crear la hoja de cálculo de Excel
+    var ws = XLSX.utils.json_to_sheet(columnas);
+    var wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Productos");
+
+    // Guardar el archivo Excel
+    var fecha = new Date();
+    var formatoFecha = fecha.getDate() + '_' + (fecha.getMonth() + 1) + '_' + fecha.getFullYear();
+    XLSX.writeFile(wb, "productos_" + formatoFecha + ".xlsx");
+  });
+
+});
+
+</script>
+
+
+</html>
